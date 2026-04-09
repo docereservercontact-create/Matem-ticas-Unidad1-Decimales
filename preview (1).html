@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Examen de Matemáticas</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background: #f4f6f9;
+}
+
+/* Pantalla inicio */
+#inicio {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+}
+
+input {
+    padding: 10px;
+    margin: 10px;
+    width: 250px;
+}
+
+button {
+    padding: 10px 20px;
+    background: #2c7be5;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #1a5dc9;
+}
+
+/* Examen */
+#examen {
+    display: none;
+    height: 100vh;
+}
+
+.container {
+    display: flex;
+    height: 100%;
+}
+
+.left {
+    width: 50%;
+}
+
+.right {
+    width: 50%;
+    overflow-y: scroll;
+    padding: 20px;
+}
+
+iframe {
+    width: 100%;
+    height: 100%;
+}
+
+.timer {
+    position: fixed;
+    top: 10px;
+    right: 20px;
+    background: black;
+    color: white;
+    padding: 10px;
+}
+
+.correcto {
+    background: #c8f7c5;
+}
+
+.incorrecto {
+    background: #f7c5c5;
+}
+</style>
+</head>
+
+<body>
+
+<!-- INICIO -->
+<div id="inicio">
+    <h2>Examen de Matemáticas</h2>
+    <input type="text" id="nombre" placeholder="Nombre completo">
+    <input type="text" id="cuenta" placeholder="Número de cuenta">
+    <button onclick="iniciarExamen()">Iniciar Examen</button>
+</div>
+
+<!-- EXAMEN -->
+<div id="examen">
+    <div class="timer" id="timer">60:00</div>
+
+    <div class="container">
+        <div class="left">
+            <!-- CAMBIA EL PDF AQUÍ -->
+            <iframe src="examen.pdf"></iframe>
+        </div>
+
+        <div class="right" id="respuestas"></div>
+    </div>
+</div>
+
+<!-- RESULTADOS -->
+<div id="resultados" style="display:none; padding:20px;"></div>
+
+<script>
+// CONFIGURACIÓN
+const TOTAL_PREGUNTAS = 20;
+
+// RESPUESTAS CORRECTAS (EDITAR)
+const respuestasCorrectas = [
+    "5","10","15","20","25","30","35","40","45","50",
+    "55","60","65","70","75","80","85","90","95","100"
+];
+
+let tiempo = 3600;
+let intervalo;
+let nombreAlumno, cuentaAlumno;
+
+// INICIAR EXAMEN
+function iniciarExamen() {
+    nombreAlumno = document.getElementById("nombre").value;
+    cuentaAlumno = document.getElementById("cuenta").value;
+
+    if (!nombreAlumno || !cuentaAlumno) {
+        alert("Completa tus datos");
+        return;
+    }
+
+    alert("Reglas:\n- No cambiar de pestaña\n- No copiar/pegar\n- Tiempo limitado\nSi incumples, reprobarás");
+
+    document.getElementById("inicio").style.display = "none";
+    document.getElementById("examen").style.display = "block";
+
+    generarPreguntas();
+    iniciarTimer();
+    activarSeguridad();
+}
+
+// GENERAR RESPUESTAS
+function generarPreguntas() {
+    let contenedor = document.getElementById("respuestas");
+    contenedor.innerHTML = "";
+
+    for (let i = 0; i < TOTAL_PREGUNTAS; i++) {
+        contenedor.innerHTML += `
+            <div>
+                <label>Pregunta ${i+1}</label>
+                <input type="text" id="p${i}">
+            </div>
+        `;
+    }
+
+    contenedor.innerHTML += `<button onclick="terminarExamen()">Enviar</button>`;
+}
+
+// TIMER
+function iniciarTimer() {
+    intervalo = setInterval(() => {
+        tiempo--;
+
+        let min = Math.floor(tiempo / 60);
+        let seg = tiempo % 60;
+
+        document.getElementById("timer").innerText =
+            `${min}:${seg.toString().padStart(2,'0')}`;
+
+        if (tiempo <= 0) {
+            terminarExamen();
+        }
+    }, 1000);
+}
+
+// SEGURIDAD
+function activarSeguridad() {
+
+    // Bloquear clic derecho
+    document.addEventListener("contextmenu", e => e.preventDefault());
+
+    // Bloquear copiar/pegar
+    document.addEventListener("keydown", function(e) {
+        if (e.ctrlKey && ['c','v','x'].includes(e.key.toLowerCase())) {
+            e.preventDefault();
+        }
+    });
+
+    // Detectar cambio de pestaña
+    document.addEventListener("visibilitychange", () => {
+        if (document.hidden) {
+            alert("Cambio de pestaña detectado. Examen terminado.");
+            terminarExamen(true);
+        }
+    });
+}
+
+// TERMINAR EXAMEN
+function terminarExamen(trampa = false) {
+    clearInterval(intervalo);
+
+    document.getElementById("examen").style.display = "none";
+    document.getElementById("resultados").style.display = "block";
+
+    let correctas = 0;
+    let html = `<h2>Resultados</h2>
+                <p>Nombre: ${nombreAlumno}</p>
+                <p>Cuenta: ${cuentaAlumno}</p>`;
+
+    html += "<table border='1'><tr><th>#</th><th>Tu respuesta</th><th>Correcta</th></tr>";
+
+    let datosPDF = [];
+
+    for (let i = 0; i < TOTAL_PREGUNTAS; i++) {
+        let resp = document.getElementById(`p${i}`)?.value || "";
+        let correcta = respuestasCorrectas[i];
+
+        let clase = "";
+
+        if (resp == correcta && !trampa) {
+            correctas++;
+            clase = "correcto";
+        } else {
+            clase = "incorrecto";
+        }
+
+        html += `<tr class="${clase}">
+                    <td>${i+1}</td>
+                    <td>${resp}</td>
+                    <td>${correcta}</td>
+                </tr>`;
+
+        datosPDF.push([i+1, resp, correcta]);
+    }
+
+    html += "</table>";
+
+    let calificacion = trampa ? 0 : (correctas / TOTAL_PREGUNTAS) * 100;
+
+    html += `<h3>Calificación: ${calificacion.toFixed(2)}%</h3>`;
+    html += `<button onclick="generarPDF()">Descargar PDF</button>`;
+
+    document.getElementById("resultados").innerHTML = html;
+
+    window.datosPDF = datosPDF;
+    window.calificacion = calificacion;
+}
+
+// GENERAR PDF
+function generarPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    doc.text("Resultados del Examen", 10, 10);
+    doc.text(`Nombre: ${nombreAlumno}`, 10, 20);
+    doc.text(`Cuenta: ${cuentaAlumno}`, 10, 30);
+    doc.text(`Calificación: ${calificacion.toFixed(2)}%`, 10, 40);
+
+    let y = 50;
+
+    datosPDF.forEach(d => {
+        doc.text(`${d[0]} | ${d[1]} | ${d[2]}`, 10, y);
+        y += 10;
+    });
+
+    doc.save("resultado.pdf");
+}
+</script>
+
+</body>
+</html>
