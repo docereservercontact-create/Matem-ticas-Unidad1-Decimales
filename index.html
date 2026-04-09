@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Examen Matemáticas</title>
+<title>Examen de Matemáticas | Unidad 1: Decimales</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
@@ -46,7 +46,7 @@ iframe { width:100%; height:100%; }
 <body>
 
 <div id="inicio">
-    <h2>Examen Matemáticas</h2>
+    <h2>Examen de Matemáticas | Unidad 1: Decimales</h2>
     <input id="nombre" placeholder="Nombre completo">
     <input id="cuenta" placeholder="Número de cuenta">
     <button onclick="iniciarExamen()">Iniciar</button>
@@ -72,8 +72,12 @@ const alumnos = [
 ];
 
 // CONFIG
-const TOTAL_PREGUNTAS = 10;
-const respuestasCorrectas = ["1","2","3","4","5","6","7","8","9","10"];
+const TOTAL_PREGUNTAS = 30;
+const respuestasCorrectas = [
+    "3.66","2.38","7.88","5.43","5.08","0.15","6.784","0.20","1.46","0.86",
+    "5/10","320/100","8.75","102.85","40","225/64","16/2","51/21","107/10","197/133",
+    "360/15","75/3","12/15","91/28","60/42","11/2","10/12","6/5","90/14","58/60"
+];
 
 let tiempo = 3600;
 let intervalo;
@@ -100,7 +104,7 @@ function iniciarExamen() {
         return;
     }
 
-    alert("Reglas: No salir, no copiar, tiempo limitado.");
+    alert("Reglas:\n- No cambiar de pestaña\n- No copiar/pegar\n- Tiempo limitado\nSi incumples, reprobarás\nAl final del examen sube tu procedimiento a classroom");
 
     document.getElementById("inicio").style.display = "none";
     document.getElementById("examen").style.display = "block";
