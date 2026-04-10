@@ -23,7 +23,7 @@ button {
     cursor:pointer;
 }
 
-#examen { display:none; height:100vh; }
+#examen { display:none; min-height:100vh; }
 
 .container { display:flex; height:100%; }
 
@@ -40,6 +40,61 @@ iframe { width:100%; height:100%; }
 
 .correcto { background:#c8f7c5; }
 .incorrecto { background:#f7c5c5; }
+
+.container {
+    display:flex;
+    min-height:100vh;
+}
+
+/* 📱 RESPONSIVE */
+@media (max-width: 900px){
+
+    .container{
+        flex-direction: column;
+    }
+
+    .left, .right{
+        width: 100%;
+        height: 50%;
+    }
+
+    iframe{
+        height: 100%;
+    }
+
+    .right{
+        padding: 10px;
+    }
+
+    input{
+        width: 90%;
+    }
+
+    button{
+        width: 90%;
+        margin-top: 10px;
+    }
+}
+
+/* 📱 celulares pequeños */
+@media (max-width: 500px){
+
+    .timer{
+        font-size: 14px;
+        padding: 5px;
+        right: 10px;
+    }
+
+    label{
+        font-size: 14px;
+    }
+
+    input{
+        font-size: 14px;
+        padding: 8px;
+    }
+}
+
 </style>
 </head>
 
@@ -74,6 +129,10 @@ const alumnos = [
     {nombre:"nahomiosorior@gmail.com", cuenta:"UNAM2026"},
     {nombre:"emilyperez.her412@gmail.com", cuenta:"UNAM2026"},
     {nombre:"diego0134r@gmail.com", cuenta:"UNAM2026"},
+    {nombre:"p13", cuenta:"1"},
+    {nombre:"p10", cuenta:"1"},
+    {nombre:"p9", cuenta:"1"},
+
 ];
 
 // CONFIG
@@ -114,7 +173,7 @@ function iniciarExamen() {
         return;
     }
 
-    if (localStorage.getItem("examen_" + cuentaAlumno)) {
+    if (sessionStorage.getItem("examen_" + cuentaAlumno)) {
         alert("Ya realizaste este examen");
         return;
     }
@@ -296,7 +355,7 @@ function terminarExamen(trampa=false) {
     });
     localStorage.setItem("resultados_examen", JSON.stringify(historial));
 
-    localStorage.setItem("examen_"+cuentaAlumno, "hecho");
+    sessionStorage.setItem("examen_"+cuentaAlumno, "hecho");
 
     window.datosPDF=datosPDF;
     window.calificacion=cal;
@@ -348,6 +407,13 @@ function generarPDF(){
     let y=50;
 
     datosPDF.forEach(d=>{
+
+        // 🔥 salto de página automático
+        if (y > 280) {
+            doc.addPage();
+            y = 20;
+        }
+
         doc.text(`${d[0]} | ${d[1]} | ${d[2]}`,10,y);
         y+=10;
     });
