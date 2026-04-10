@@ -294,7 +294,7 @@ function terminarExamen(trampa=false) {
     }
 
     clearInterval(intervalo);
-
+    
     document.getElementById("examen").style.display="none";
     document.getElementById("resultados").style.display="block";
 
@@ -332,6 +332,7 @@ function terminarExamen(trampa=false) {
     html+="</table>";
 
     let cal= trampa?0:(correctas/TOTAL_PREGUNTAS)*100;
+    window.trampaDetectada = trampa;
     let tiempoTotal = 7200 - tiempo;
     let minutos = Math.floor(tiempoTotal/60);
     let cal10 = (cal/10).toFixed(1);
@@ -402,7 +403,13 @@ function generarPDF(){
     doc.text("Resultados",10,10);
     doc.text(nombreAlumno,10,20);
     doc.text(cuentaAlumno,10,30);
-    doc.text(calificacion.toFixed(2)+"%",10,40);
+
+    // 🔥 MENSAJE DE TRAMPA
+    if (window.trampaDetectada) {
+        doc.text("REPROBADO POR INTENTO DE HACER TRAMPA",10,40);
+    } else {
+        doc.text(calificacion.toFixed(2)+"%",10,40);
+    }
 
     let y=50;
 
